@@ -6,6 +6,7 @@ import optparse
 import os
 import twitter
 
+# class for parsing and returning config values from .tweetrc
 class TweetRc(object):
     def __init__(self):
         self._config = None
@@ -34,6 +35,7 @@ class TweetRc(object):
             self._config.read(os.path.expanduser('~/.tweetrc'))
         return self._config
 
+# authenticate to the Twitter API using appropriate tokens
 def authenticate():
     rc = TweetRc()
     consumer_key = rc.GetConsumerKey()
@@ -46,6 +48,7 @@ def authenticate():
                       access_token_secret=access_token_secret)
     return api
 
+# get the user-supplied arguments
 def get_options():
     parser = optparse.OptionParser('usage:\r\n builder.py -u <username>')
 
@@ -62,15 +65,8 @@ def get_options():
 
     return username
 
-def main():
-    username = get_options()
-    api = authenticate()
-
-    print api.VerifyCredentials()
-
-    print "[+] Fetching statuses for user: " + username
-    statuses = api.GetUserTimeline(screen_name=username)
-
+# print all possible fields from statuses
+def print_statuses(statuses):
     print "CONTRIBUTORS: "
     print [s.contributors for s in statuses]
     print "--------------------------------"
@@ -140,31 +136,31 @@ def main():
     print "HASHTAGS: "
     print [s.hashtags for s in statuses]
     print "--------------------------------"
-'''
-     status.contributors
-     status.coordinates
-     status.created_at
-     status.created_at_in_seconds # read only
-     status.favorited
-     status.favorite_count
-     status.geo
-     status.id
-     status.in_reply_to_screen_name
-     status.in_reply_to_user_id
-     status.in_reply_to_status_id
-     status.lang
-     status.place
-     status.retweet_count
-     status.relative_created_at # read only
-     status.source
-     status.text
-     status.truncated
-     status.location
-     status.user
-     status.urls
-     status.user_mentions
-     status.hashtags
-'''
+
+# parse the TEXT from each status, extracting each word and removing duplicates
+def parse_statuses(statuses):
+
+    wordlist = []
+
+    for s in statuses:
+        for word in s.text.split():
+            wordlist.append(word)
+
+    wordlist = list(set(wordlist))
+    wordlist.sort()
+    print "[+] Found " + str(len(wordlist)) + " new words"
+    return wordlist
+
+def main():
+    username = get_options()
+    api = authenticate()
+
+    #print api.VerifyCredentials()
+
+    print "[+] Fetching statuses for user: " + username
+    statuses = api.GetUserTimeline(screen_name=username)
+    #print_statuses(statuses)
+    print parse_statuses(statuses)
 
 if __name__ == '__main__':
     main()
@@ -172,3 +168,4 @@ if __name__ == '__main__':
 
 #TODO:
 # add other authentication methods
+# add option for output file, or use default file
