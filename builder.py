@@ -50,20 +50,38 @@ def authenticate():
 
 # get the user-supplied arguments
 def get_options():
-    parser = optparse.OptionParser('usage:\r\n builder.py -u <username>')
+    parser = optparse.OptionParser('usage:\r\n builder.py -u <username> '\
+                                   ' [-o <output file>]')
 
     parser.add_option('-u', dest='username', type='string',\
       help='specify Twitter username')
+    parser.add_option('-o', dest='outfile', type='string',\
+      help='specify output file name for wordlist')
 
     (options, args) = parser.parse_args()
 
     username = options.username
+    outfile = options.outfile
 
     if username == None:
         print parser.usage
         exit(0)
 
-    return username
+    if outfile == None:
+        outfile = "wordlist.txt"
+
+    return username, outfile
+
+# Try to open file_name in mode
+# If successful, return the opened file descriptor
+def open_file(file_name, mode):
+    try:
+        the_file = open(file_name, mode)
+    except IOError, e:
+        print "Unable to open the file", file_name, "Exiting.\n", e
+        exit(0)
+    else:
+        return the_file
 
 # print all possible fields from statuses
 def print_statuses(statuses):
@@ -139,28 +157,33 @@ def print_statuses(statuses):
 
 # parse the TEXT from each status, extracting each word and removing duplicates
 def parse_statuses(statuses):
-
     wordlist = []
 
     for s in statuses:
         for word in s.text.split():
-            wordlist.append(word)
+            wordlist.append(word.encode('ascii', 'ignore'))
 
     wordlist = list(set(wordlist))
     wordlist.sort()
     print "[+] Found " + str(len(wordlist)) + " new words"
     return wordlist
 
-def main():
-    username = get_options()
-    api = authenticate()
+# write the wordlist out to a file
+def write_wordlist(wordlist, outfile):
+    f = open_file(outfile, "a+")
+    for element in wordlist:
+        f.write("%s\n" % element)
+    print "[+] Writing wordlist to: " + outfile
+    f.close()
 
-    #print api.VerifyCredentials()
+def main():
+    username,outfile = get_options()
+    api = authenticate()
 
     print "[+] Fetching statuses for user: " + username
     statuses = api.GetUserTimeline(screen_name=username)
-    #print_statuses(statuses)
-    print parse_statuses(statuses)
+
+    write_wordlist(parse_statuses(statuses), outfile)
 
 if __name__ == '__main__':
     main()
@@ -168,4 +191,3 @@ if __name__ == '__main__':
 
 #TODO:
 # add other authentication methods
-# add option for output file, or use default file
