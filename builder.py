@@ -68,7 +68,7 @@ def get_options():
         exit(0)
 
     if outfile == None:
-        outfile = "wordlist.txt"
+        outfile = str(username) + ".txt"
 
     return username, outfile
 
