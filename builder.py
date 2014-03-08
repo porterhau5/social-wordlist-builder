@@ -4,6 +4,7 @@
 import ConfigParser
 import optparse
 import os
+import string
 import twitter
 
 # class for parsing and returning config values from .tweetrc
@@ -84,6 +85,7 @@ def open_file(file_name, mode):
         return the_file
 
 # print all possible fields from statuses
+# mostly for reference
 def print_statuses(statuses):
     print "CONTRIBUTORS: "
     print [s.contributors for s in statuses]
@@ -161,10 +163,16 @@ def parse_statuses(statuses):
 
     for s in statuses:
         for word in s.text.split():
-            wordlist.append(word.encode('ascii', 'ignore'))
+            word = word.encode('ascii', 'ignore')
+            wordlist.append(word)
+            # remove punctuation from word
+            word = word.translate(string.maketrans("",""), string.punctuation)
+            wordlist.append(word)
 
+    # remove duplicates and sort
     wordlist = list(set(wordlist))
     wordlist.sort()
+
     print "[+] Found " + str(len(wordlist)) + " new words"
     return wordlist
 
@@ -191,3 +199,5 @@ if __name__ == '__main__':
 
 #TODO:
 # add other authentication methods
+# find more sources for words: user info, friends, more statuses, etc.
+# update README
