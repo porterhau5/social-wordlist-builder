@@ -36,6 +36,7 @@ class TweetRc(object):
             self._config.read(os.path.expanduser('~/.tweetrc'))
         return self._config
 
+
 # authenticate to the Twitter API using appropriate tokens
 def authenticate():
     rc = TweetRc()
@@ -48,6 +49,7 @@ def authenticate():
                       access_token_key=access_token_key,
                       access_token_secret=access_token_secret)
     return api
+
 
 # get the user-supplied arguments
 def get_options():
@@ -73,6 +75,7 @@ def get_options():
 
     return username, outfile
 
+
 # Try to open file_name in mode
 # If successful, return the opened file descriptor
 def open_file(file_name, mode):
@@ -84,7 +87,8 @@ def open_file(file_name, mode):
     else:
         return the_file
 
-# print all possible fields from statuses
+
+# print all possible fields for twitter.Status object
 # mostly for reference
 def print_statuses(statuses):
     print "CONTRIBUTORS: "
@@ -157,6 +161,96 @@ def print_statuses(statuses):
     print [s.hashtags for s in statuses]
     print "--------------------------------"
 
+
+# print all possible fields for twitter.User object
+# mostly for reference
+def print_user(user):
+    print "ID: "
+    print user.id
+    print "--------------------------------"
+    print "NAME: "
+    print user.name
+    print "--------------------------------"
+    print "SCREEN_NAME: "
+    print user.screen_name
+    print "--------------------------------"
+    print "LOCATION: "
+    print user.location
+    print "--------------------------------"
+    print "DESCRIPTION: "
+    print user.description
+    print "--------------------------------"
+    print "PROFILE_IMAGE_URL: "
+    print user.profile_image_url
+    print "--------------------------------"
+    print "PROFILE_BACKGROUND_TILE: "
+    print user.profile_background_tile
+    print "--------------------------------"
+    print "PROFILE_BACKGROUND_IMAGE_URL: "
+    print user.profile_background_image_url
+    print "--------------------------------"
+    print "PROFILE_SIDEBAR_FILL_COLOR: "
+    print user.profile_sidebar_fill_color
+    print "--------------------------------"
+    print "PROFILE_BACKGROUND_COLOR: "
+    print user.profile_background_color
+    print "--------------------------------"
+    print "PROFILE_LINK_COLOR: "
+    print user.profile_link_color
+    print "--------------------------------"
+    print "PROFILE_TEXT_COLOR: "
+    print user.profile_text_color
+    print "--------------------------------"
+    print "PROTECTED: "
+    print user.protected
+    print "--------------------------------"
+    print "UTC_OFFSET: "
+    print user.utc_offset
+    print "--------------------------------"
+    print "TIME_ZONE: "
+    print user.time_zone
+    print "--------------------------------"
+    print "URL: "
+    print user.url
+    print "--------------------------------"
+    print "STATUS: "
+    print user.status
+    print "--------------------------------"
+    print "STATUSES_COUNT: "
+    print user.statuses_count
+    print "--------------------------------"
+    print "FOLLOWERS_COUNT: "
+    print user.followers_count
+    print "--------------------------------"
+    print "FRIENDS_COUNT: "
+    print user.friends_count
+    print "--------------------------------"
+    print "FAVOURITES_COUNT: "
+    print user.favourites_count
+    print "--------------------------------"
+    print "GEO_ENABLED: "
+    print user.geo_enabled
+    print "--------------------------------"
+    print "VERIFIED: "
+    print user.verified
+    print "--------------------------------"
+    print "LANG: "
+    print user.lang
+    print "--------------------------------"
+    print "NOTIFICATIONS: "
+    print user.notifications
+    print "--------------------------------"
+    print "CONTRIBUTORS_ENABLED: "
+    print user.contributors_enabled
+    print "--------------------------------"
+    print "CREATED_AT: "
+    print user.created_at
+    print "--------------------------------"
+    print "LISTED_COUNT: "
+    print user.listed_count
+    print "--------------------------------"
+
+
 # parse the TEXT from each status, extracting each word and removing duplicates
 def parse_statuses(statuses):
     wordlist = []
@@ -176,6 +270,26 @@ def parse_statuses(statuses):
     print "[+] Found " + str(len(wordlist)) + " new words"
     return wordlist
 
+
+def parse_user(user):
+    wordlist = []
+
+    # get words from User's description
+    for word in user.description.split():
+        word = word.encode('ascii', 'ignore')
+        wordlist.append(word)
+        # remove punctuation from word
+        word = word.translate(string.maketrans("",""), string.punctuation)
+        wordlist.append(word)
+
+    # remove duplicates and sort
+    wordlist = list(set(wordlist))
+    wordlist.sort()
+
+    print "[+] Found " + str(len(wordlist)) + " new words"
+    return wordlist
+
+
 # write the wordlist out to a file
 def write_wordlist(wordlist, outfile):
     f = open_file(outfile, "a+")
@@ -184,14 +298,19 @@ def write_wordlist(wordlist, outfile):
     print "[+] Writing wordlist to: " + outfile
     f.close()
 
+
 def main():
     username,outfile = get_options()
     api = authenticate()
 
+    print "[+] Fetching information for user: " + username
+    user = api.GetUser(screen_name=username)
+    write_wordlist(parse_user(user), outfile)
+
     print "[+] Fetching statuses for user: " + username
     statuses = api.GetUserTimeline(screen_name=username)
-
     write_wordlist(parse_statuses(statuses), outfile)
+
 
 if __name__ == '__main__':
     main()
