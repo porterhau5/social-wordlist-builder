@@ -282,6 +282,30 @@ def parse_user(user):
         word = word.translate(string.maketrans("",""), string.punctuation)
         wordlist.append(word)
 
+    # get words from User's name
+    for word in user.name.split():
+        word = word.encode('ascii', 'ignore')
+        wordlist.append(word)
+        # remove punctuation from word
+        word = word.translate(string.maketrans("",""), string.punctuation)
+        wordlist.append(word)
+
+    # get words from User's screen_name
+    for word in user.screen_name.split():
+        word = word.encode('ascii', 'ignore')
+        wordlist.append(word)
+        # remove punctuation from word
+        word = word.translate(string.maketrans("",""), string.punctuation)
+        wordlist.append(word)
+
+    # get words from User's location
+    for word in user.location.split():
+        word = word.encode('ascii', 'ignore')
+        wordlist.append(word)
+        # remove punctuation from word
+        word = word.translate(string.maketrans("",""), string.punctuation)
+        wordlist.append(word)
+
     # remove duplicates and sort
     wordlist = list(set(wordlist))
     wordlist.sort()
@@ -318,5 +342,5 @@ if __name__ == '__main__':
 
 #TODO:
 # add other authentication methods
-# find more sources for words: user info, friends, more statuses, etc.
+# find more sources for words: friends, more statuses, etc.
 # update README
