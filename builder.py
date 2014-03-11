@@ -7,6 +7,8 @@ import os
 import string
 import twitter
 
+wordlist = []
+
 # class for parsing and returning config values from .tweetrc
 class TweetRc(object):
     def __init__(self):
@@ -251,9 +253,8 @@ def print_user(user):
     print "--------------------------------"
 
 
-# parse the TEXT from each status, extracting each word and removing duplicates
+# parse the TEXT from each status, extracting each word
 def parse_statuses(statuses):
-    wordlist = []
 
     for s in statuses:
         for word in s.text.split():
@@ -263,16 +264,8 @@ def parse_statuses(statuses):
             word = word.translate(string.maketrans("",""), string.punctuation)
             wordlist.append(word)
 
-    # remove duplicates and sort
-    wordlist = list(set(wordlist))
-    wordlist.sort()
-
-    print "[+] Found " + str(len(wordlist)) + " new words"
-    return wordlist
-
 
 def parse_user(user):
-    wordlist = []
 
     # get words from User's description
     for word in user.description.split():
@@ -306,16 +299,16 @@ def parse_user(user):
         word = word.translate(string.maketrans("",""), string.punctuation)
         wordlist.append(word)
 
+
+# write the wordlist out to a file
+def write_wordlist(wordlist, outfile):
+
     # remove duplicates and sort
     wordlist = list(set(wordlist))
     wordlist.sort()
 
     print "[+] Found " + str(len(wordlist)) + " new words"
-    return wordlist
 
-
-# write the wordlist out to a file
-def write_wordlist(wordlist, outfile):
     f = open_file(outfile, "a+")
     for element in wordlist:
         f.write("%s\n" % element)
@@ -329,11 +322,14 @@ def main():
 
     print "[+] Fetching information for user: " + username
     user = api.GetUser(screen_name=username)
-    write_wordlist(parse_user(user), outfile)
+    parse_user(user)
 
     print "[+] Fetching statuses for user: " + username
     statuses = api.GetUserTimeline(screen_name=username)
-    write_wordlist(parse_statuses(statuses), outfile)
+                                #   include_rts=True)
+                                #   count=200,
+    parse_statuses(statuses)
+    write_wordlist(wordlist, outfile)
 
 
 if __name__ == '__main__':
@@ -342,5 +338,6 @@ if __name__ == '__main__':
 
 #TODO:
 # add other authentication methods
-# find more sources for words: friends, more statuses, etc.
+# find more sources for words: friends, etc.
+# strip out URLs
 # update README
