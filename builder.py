@@ -307,6 +307,10 @@ def write_wordlist(wordlist, outfile):
     wordlist = list(set(wordlist))
     wordlist.sort()
 
+    # remove URLs (of the form http://t.co)
+    wordlist[:] = [word for word in wordlist if not ("http://t.co" in word
+                   or "httptco" in word)]
+
     print "[+] Found " + str(len(wordlist)) + " new words"
 
     f = open_file(outfile, "a+")
@@ -338,6 +342,5 @@ if __name__ == '__main__':
 
 #TODO:
 # add other authentication methods
-# find more sources for words: friends, etc.
-# strip out URLs
+# find more sources for words: friends, follow URLs?, etc.
 # update README
