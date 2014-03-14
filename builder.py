@@ -303,6 +303,7 @@ def parse_user(user):
 # write the wordlist out to a file
 def write_wordlist(wordlist, outfile):
 
+
     # remove duplicates and sort
     wordlist = list(set(wordlist))
     wordlist.sort()
@@ -311,12 +312,23 @@ def write_wordlist(wordlist, outfile):
     wordlist[:] = [word for word in wordlist if not ("http://t.co" in word
                    or "httptco" in word)]
 
-    print "[+] Found " + str(len(wordlist)) + " new words"
-
     f = open_file(outfile, "a+")
     for element in wordlist:
         f.write("%s\n" % element)
-    print "[+] Writing wordlist to: " + outfile
+    print "[+] Writing " + str(len(wordlist)) + " words to: " + outfile
+    f.close()
+
+    # convert words to lowercase
+    wordlist_lower = [word.lower() for word in wordlist]
+    # remove duplicates and sort
+    wordlist_lower = list(set(wordlist_lower))
+    wordlist_lower.sort()
+
+    f = open_file("lower_" + outfile, "a+")
+    for element in wordlist_lower:
+        f.write("%s\n" % element)
+    print "[+] Writing " + str(len(wordlist_lower)) + " words to: lower_" +\
+          outfile
     f.close()
 
 
