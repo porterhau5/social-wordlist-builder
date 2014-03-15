@@ -56,26 +56,37 @@ def authenticate():
 # get the user-supplied arguments
 def get_options():
     parser = optparse.OptionParser('usage:\r\n builder.py -u <username> '\
-                                   ' [-o <output file>]')
+                                   ' [-c <status count> -o <output file>]')
 
-    parser.add_option('-u', dest='username', type='string',\
-      help='specify Twitter username')
+    parser.add_option('-c', dest='count', type='int',\
+      help='specify number of statuses to pull (max 200)')
     parser.add_option('-o', dest='outfile', type='string',\
       help='specify output file name for wordlist')
+    parser.add_option('-u', dest='username', type='string',\
+      help='specify Twitter username')
 
     (options, args) = parser.parse_args()
 
-    username = options.username
+    count = options.count
     outfile = options.outfile
+    username = options.username
+
+    if count > 200:
+        print "Count must be less than or equal to 200"
+        print parser.usage
+        exit(0)
+
+    if count == None:
+        count = 20
+
+    if outfile == None:
+        outfile = str(username) + ".txt"
 
     if username == None:
         print parser.usage
         exit(0)
 
-    if outfile == None:
-        outfile = str(username) + ".txt"
-
-    return username, outfile
+    return count, outfile, username
 
 
 # Try to open file_name in mode
@@ -256,7 +267,9 @@ def print_user(user):
 # parse the TEXT from each status, extracting each word
 def parse_statuses(statuses):
 
+    status_count = 0
     for s in statuses:
+        status_count += 1
         for word in s.text.split():
             word = word.encode('ascii', 'ignore')
             wordlist.append(word)
@@ -264,6 +277,7 @@ def parse_statuses(statuses):
             word = word.translate(string.maketrans("",""), string.punctuation)
             wordlist.append(word)
 
+    print "[+] Found " + str(status_count) + " statuses"
 
 def parse_user(user):
 
@@ -333,7 +347,7 @@ def write_wordlist(wordlist, outfile):
 
 
 def main():
-    username,outfile = get_options()
+    count,outfile,username = get_options()
     api = authenticate()
 
     print "[+] Fetching information for user: " + username
@@ -341,9 +355,9 @@ def main():
     parse_user(user)
 
     print "[+] Fetching statuses for user: " + username
-    statuses = api.GetUserTimeline(screen_name=username)
-                                #   include_rts=True)
-                                #   count=200,
+    statuses = api.GetUserTimeline(screen_name=username,
+                                   count=count,
+                                   include_rts=True)
     parse_statuses(statuses)
     write_wordlist(wordlist, outfile)
 
