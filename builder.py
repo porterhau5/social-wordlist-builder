@@ -76,9 +76,11 @@ def get_options():
         print parser.usage
         exit(0)
 
+    # default to 20
     if count == None:
         count = 20
 
+    # default to username.txt
     if outfile == None:
         outfile = str(username) + ".txt"
 
@@ -267,6 +269,8 @@ def print_user(user):
 # parse the TEXT from each status, extracting each word
 def parse_statuses(statuses):
 
+    print "[*] Fetching user statuses..."
+
     status_count = 0
     for s in statuses:
         status_count += 1
@@ -277,10 +281,13 @@ def parse_statuses(statuses):
             word = word.translate(string.maketrans("",""), string.punctuation)
             wordlist.append(word)
 
-    print "[+] Found " + str(status_count) + " statuses"
+    print "        Found " + str(status_count) + " statuses"
 
 def parse_user(user):
 
+    print "[*] Fetching user information..."
+
+    print "        Fetching user description"
     # get words from User's description
     for word in user.description.split():
         word = word.encode('ascii', 'ignore')
@@ -289,6 +296,7 @@ def parse_user(user):
         word = word.translate(string.maketrans("",""), string.punctuation)
         wordlist.append(word)
 
+    print "        Fetching user name"
     # get words from User's name
     for word in user.name.split():
         word = word.encode('ascii', 'ignore')
@@ -297,6 +305,7 @@ def parse_user(user):
         word = word.translate(string.maketrans("",""), string.punctuation)
         wordlist.append(word)
 
+    print "        Fetching user screenname"
     # get words from User's screen_name
     for word in user.screen_name.split():
         word = word.encode('ascii', 'ignore')
@@ -305,6 +314,7 @@ def parse_user(user):
         word = word.translate(string.maketrans("",""), string.punctuation)
         wordlist.append(word)
 
+    print "        Fetching user location"
     # get words from User's location
     for word in user.location.split():
         word = word.encode('ascii', 'ignore')
@@ -316,7 +326,6 @@ def parse_user(user):
 
 # write the wordlist out to a file
 def write_wordlist(wordlist, outfile):
-
 
     # remove duplicates and sort
     wordlist = list(set(wordlist))
@@ -350,15 +359,16 @@ def main():
     count,outfile,username = get_options()
     api = authenticate()
 
-    print "[+] Fetching information for user: " + username
+    print "[*] Twitter username: " + username
+
     user = api.GetUser(screen_name=username)
     parse_user(user)
 
-    print "[+] Fetching statuses for user: " + username
     statuses = api.GetUserTimeline(screen_name=username,
                                    count=count,
                                    include_rts=True)
     parse_statuses(statuses)
+
     write_wordlist(wordlist, outfile)
 
 
